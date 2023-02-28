@@ -26,9 +26,14 @@ class User < ApplicationRecord
     SecureRandom.urlsafe_base64
   end
   
-   # 永続セッションのためハッシュ化したトークンをデータベースに記憶します。
+  # 永続セッションのためハッシュ化したトークンをデータベースに記憶します。
   def remember
     self.remember_token = User.new_token
     update_attribute(:remember_digest, User.digest(remember_token))
+  end
+  
+  # トークンがダイジェストと一致すればtrueを返します。
+  def authenticated?(remember_token)
+    BCrypt::password.new(remember_digest). is_password?(remember_token)
   end
 end
