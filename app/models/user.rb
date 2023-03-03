@@ -10,7 +10,8 @@ class User < ApplicationRecord
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: true    
   has_secure_password
-  validates :password, presence: true, length: { minimum: 6 }
+  validates :password, presence: true, length: { minimum: 6 },
+  allow_nil: true
 
   # 渡された文字列のハッシュ値を返します。
   def User.digest(string)
@@ -37,7 +38,7 @@ class User < ApplicationRecord
   # トークンがダイジェストと一致すればtrueを返します。
   def authenticated?(remember_token)
     # ダイジェストが存在しない場合はfalseを返して終了します。
-    return false if remember_digest.nill?
+    return false if remember_digest.nil?
     BCrypt::Password.new(remember_digest).is_password?(remember_token)
   end
   
