@@ -48,29 +48,41 @@ class UsersController < ApplicationController
   end
 
   def update_basic_info
+  if @user.update_attributes(basic_info_params)
+    flash[:success] = "#{@user.name}の基本情報を更新しました。"
+  else
+    flash[:danger] = "#{@user.name}の更新は失敗しました。<br>" + @user.errors.full_messages.join("<br>")
   end
+  redirect_to users_url
+end
+
+
 
   private
 
-    def user_params
-      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation)
-    end
+   def user_params
+     params.require(:user).permit(:name, :email, :department, :password, :password_confirmation)
+   end
+    
+   def basic_info_params
+     params.require(:user).permit(:department, :basic_time, :work_time)
+   end
 
-    # beforeフィルター
+   # beforeフィルター
 
-    # paramsハッシュからユーザーを取得します。
-    def set_user
-      @user = User.find(params[:id])
-    end
+   # paramsハッシュからユーザーを取得します。
+   def set_user
+     @user = User.find(params[:id])
+   end
 
-    # ログイン済みのユーザーか確認します。
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "ログインしてください。"
-        redirect_to login_url
-      end
-    end
+   # ログイン済みのユーザーか確認します。
+   def logged_in_user
+     unless logged_in?
+       store_location
+       flash[:danger] = "ログインしてください。"
+       redirect_to login_url
+     end
+   end
 
     # アクセスしたユーザーが現在ログインしているユーザーか確認します。
     def correct_user
