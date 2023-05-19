@@ -33,7 +33,14 @@ class AttendancesController < ApplicationController
     ActiveRecord::Base.transaction do # トランザクションを開始します。
       attendances_params.each do |id, item|
         attendance = Attendance.find(id)
-        attendance.update_attributes!(item)
+        # 出勤時間と退社時間が存在する場合のみ更新
+        if item[:started_at].present? && item[:finished_at].present?
+          attendance.update_attributes!(item)
+        else
+          # エラーメッセージを追加し、例外を発生させる
+          attendance.errors.add(:base, "出勤時間と退社時間の両方が必要です。")
+          raise ActiveRecord::RecordInvalid.new(attendance)
+        end
       end
     end
     flash[:success] = "1ヶ月分の勤怠情報を更新しました。"
