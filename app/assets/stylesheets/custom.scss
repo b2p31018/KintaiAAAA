@@ -102,3 +102,27 @@ p {
 .modal-dialog-center {
   padding-top: 10%;
 }
+
+/* 勤怠一覧表示のカレンダー */
+
+.saturday {
+  color: blue;
+}
+
+.sunday {
+  color: red;
+}
+
+
+.input-group-append {
+  display: flex;
+}
+
+.input-group-append > .btn {
+  margin-left: -1px;
+}
+
+/* ユーザー名検索フォーム */
+.search-heading {
+  font-weight: bold;
+}

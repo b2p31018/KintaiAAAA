@@ -49,4 +49,9 @@ class User < ApplicationRecord
   def forget
     update_attribute(:remember_digest, nil)
   end
+  
+  # 検索のためのメソッド
+  scope :search_by_name, -> (name) {
+    where('name LIKE ?', "%#{name}%") if name.present?
+  }
 end

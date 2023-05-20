@@ -11,13 +11,15 @@ class AttendancesController < ApplicationController
     @attendance = Attendance.find(params[:id])
     # 出勤時間が未登録であることを判定します。
     if @attendance.started_at.nil?
-      if @attendance.update_attributes(started_at: Time.current.change(sec: 0))
+      rounded_start_time = round_time(Time.current.change(sec: 0))
+      if @attendance.update_attributes(started_at: rounded_start_time)
         flash[:info] = "おはようございます！"
       else
         flash[:danger] = UPDATE_ERROR_MSG
       end
     elsif @attendance.finished_at.nil?
-      if @attendance.update_attributes(finished_at: Time.current.change(sec: 0))
+      rounded_end_time = round_time(Time.current.change(sec: 0))
+      if @attendance.update_attributes(finished_at: rounded_end_time)
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
@@ -66,5 +68,18 @@ class AttendancesController < ApplicationController
         flash[:danger] = "編集権限がありません。"
         redirect_to(root_url)
       end  
+    end
+    
+    def round_time(time)
+      minutes = time.min
+      if minutes < 15
+        time.change(min: 0)
+      elsif minutes < 30
+        time.change(min: 15)
+      elsif minutes < 45
+        time.change(min: 30)
+      else
+        time.change(min: 45)
+      end
     end
 end
