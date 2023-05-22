@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :correct_user, only: [:edit, :update]
+  before_action :correct_user, only: [:show, :edit, :update]
   before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
   before_action :set_one_month, only: :show
 
@@ -11,6 +11,13 @@ class UsersController < ApplicationController
 
   def show
     @worked_sum = @attendances.where.not(started_at: nil).count
+    @total_working_hours = @attendances.sum do |attendance|
+      if attendance.started_at.present? && attendance.finished_at.present?
+        ((attendance.finished_at - attendance.started_at) / 3600).round(2)
+      else
+        0
+      end
+    end
   end
 
   def new
@@ -67,4 +74,13 @@ class UsersController < ApplicationController
     def basic_info_params
       params.require(:user).permit(:department, :basic_time, :work_time)
     end
+
+# 正しいユーザーかどうか確認します。
+  def correct_user
+    @user = User.find(params[:id])
+    unless current_user?(@user) || current_user.admin?
+      flash[:danger] = "アクセス権限がありません。"
+      redirect_to(root_url)
+    end
+  end
 end

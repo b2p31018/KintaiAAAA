@@ -32,23 +32,28 @@ class AttendancesController < ApplicationController
   end
 
   def update_one_month
-    ActiveRecord::Base.transaction do # トランザクションを開始します。
+    ActiveRecord::Base.transaction do
       attendances_params.each do |id, item|
         attendance = Attendance.find(id)
-        # 出勤時間と退社時間が存在する場合のみ更新
         if item[:started_at].present? && item[:finished_at].present?
-          attendance.update_attributes!(item)
+          if item[:finished_at] >= item[:started_at]
+            attendance.update_attributes!(item)
+          else
+            attendance.errors.add(:base, "退勤時間は出勤時間より遅い必要があります。")
+            raise ActiveRecord::RecordInvalid.new(attendance)
+          end
+        elsif item[:started_at].blank? && item[:finished_at].blank?
+          next
         else
-          # エラーメッセージを追加し、例外を発生させる
-          attendance.errors.add(:base, "出勤時間と退社時間の両方が必要です。")
+          attendance.errors.add(:base, "出勤時間と退勤時間の両方が必要です。")
           raise ActiveRecord::RecordInvalid.new(attendance)
         end
       end
     end
     flash[:success] = "1ヶ月分の勤怠情報を更新しました。"
     redirect_to user_url(date: params[:date])
-  rescue ActiveRecord::RecordInvalid # トランザクションによるエラーの分岐です。
-    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "無効な入力データがあったため、更新をキャンセルしました。"
     redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
 
