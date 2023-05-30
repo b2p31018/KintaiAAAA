@@ -9,10 +9,12 @@
           <th>曜日</th>
           <th>出勤時間</th>
           <th>退勤時間</th>
+          <th>翌日</th>
           <th>在社時間</th>
           <th>備考</th>
         </tr>
       </thead>
+      
       <tbody>
         <% @attendances.each do |day| %>
           <%= f.fields_for "attendances[]", day do |attendance| %>
