@@ -14,19 +14,34 @@
         <div class="col-md-6 col-md-offset-3">
           <%= form_with(model: @user, url: update_basic_info_user_path(@user), local: true, method: :patch) do |f| %>
             <%= render 'shared/error_messages', object: @user %>
-
+          
             <%= f.label :name, class: "label-#{yield(:class_text)}" %>
-            <p><%= @user.name %></p>
-
-            <%= f.label :department, class: "label-#{yield(:class_text)}" %>
+            <%= f.text_field :name, class: "form-control" %>
+          
+            <%= f.label :email, "メールアドレス", class: "label-#{yield(:class_text)}" %>
+            <%= f.email_field :email, class: "form-control" %>
+          
+            <%= f.label :department, "所属", class: "label-#{yield(:class_text)}" %>
             <%= f.text_field :department, class: "form-control" %>
-
-            <%= f.label :basic_time, class: "label-#{yield(:class_text)}" %>
-            <%= f.time_field :basic_time, class: "form-control" %>
-
-            <%= f.label :work_time, class: "label-#{yield(:class_text)}" %>
-            <%= f.time_field :work_time, class: "form-control" %>
-
+          
+            <%= f.label :employee_number, "社員番号", class: "label-#{yield(:class_text)}" %>
+            <%= f.number_field :employee_number, class: "form-control" %>
+          
+            <%= f.label :card_id, "カードID", class: "label-#{yield(:class_text)}" %>
+            <%= f.text_field :card_id, class: "form-control" %>
+          
+            <%= f.label :start_time, "始業指定時間", class: "label-#{yield(:class_text)}" %>
+            <%= f.time_field :start_time, class: "form-control" %>
+          
+            <%= f.label :end_time, "終業指定時間", class: "label-#{yield(:class_text)}" %>
+            <%= f.time_field :end_time, class: "form-control" %>
+          
+            <%= f.label :password, "パスワード", class: "label-#{yield(:class_text)}" %>
+            <%= f.password_field :password, class: "form-control" %>
+          
+            <%= f.label :password_confirmation, "パスワード再入力", class: "label-#{yield(:class_text)}" %>
+            <%= f.password_field :password_confirmation, class: "form-control" %>
+          
             <div class="center">
               <%= f.submit yield(:button_text), class: "btn btn-primary btn-#{yield(:class_text)}" %>
               <button type="button" class="btn btn-default btn-<%= yield(:class_text) %>" data-dismiss="modal">

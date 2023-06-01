@@ -8,32 +8,25 @@
 </div>
 
 <div class="col-md-10 col-md-offset-1">
-  <table class="table table-condensed table-hover" id="table-users">
-    <thead>
-      <tr>
-        <% if current_user.admin? %>
-         <th></th>
+  <% @users.each do |user| %>
+    <% unless user == current_user %>
+      <div class="user-item">
+        <p><%= user.name %></p>
+        <% if current_user.admin? && !current_user?(user) %>
+          <%= link_to "削除", user, method: :delete,
+              data: { confirm: "削除してよろしいですか？" }, class: "btn btn-primary delete-button-custom" %>
+          <div class="edit-button-container">
+            <%= link_to "編集", edit_basic_info_user_path(user), remote: true, class: "btn btn-primary btn-lg edit-button-custom edit-button-margin" %>
+          </div>
         <% end %>
-      </tr>
-    </thead>
-
-    <% @users.each do |user| %>
-      <% unless user == current_user %>
-        <tr>
-          <td><%= user.name %></td>
-          <% if current_user.admin? && !current_user?(user) %>
-            <td class="center">
-              <%= link_to "基本情報編集", edit_basic_info_user_path(user), remote: true, class: "btn btn-success" %>
-              <%= link_to "削除", user, method: :delete,
-                  data: { confirm: "削除してよろしいですか？" }, class: "btn btn-danger" %>
-            </td>
-          <% end %>
-        </tr>
-      <% end %>
+      </div>
+      <div class="divider"></div> <!-- 編集ボタンの下の仕切りの要素 -->
     <% end %>
-  </table>
-  <%= will_paginate %>
+  <% end %>
 </div>
-
 <!--モーダルウインドウ表示-->
 <div id="edit-basic-info" class="modal fade" tabindex="-1" role: dialog" aria-hidden="true"></div>
+
+<div class="pagination-container">
+  <%= will_paginate @users %>
+</div>

@@ -126,3 +126,25 @@ p {
 .search-heading {
   font-weight: bold;
 }
+.user-item {
+  border-bottom: none; /* 下線を削除 */
+  margin-bottom: 20px;  /* 必要に応じて値を調整してください */
+}
+
+.edit-button-container {
+  background-color: #f5f5f5; /* グレー色 */
+  padding: 10px 0; /* 上下のスペースの余白を設定 */
+}
+
+.edit-button-custom {
+  margin-left: 15px;
+}
+
+.username-custom {
+  margin-bottom: 0px; /* あるいは適切な値に調整してください */
+}
+
+.delete-button-custom {
+  margin-top: -13px; /* あるいは適切な値に調整してください */
+}
+
