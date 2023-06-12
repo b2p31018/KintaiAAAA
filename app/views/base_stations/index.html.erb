@@ -1,0 +1,43 @@
+<h1>拠点一覧</h1>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th class="text-center">拠点番号</th>
+      <th class="text-center">拠点名</th>
+      <th class="text-center">勤怠種類</th>
+    </tr>
+  </thead>
+  <tbody id="base-table-body">
+    <% @base_stations.each do |base_station| %>
+      <tr>
+        <td class="text-center"><%= link_to '修正', '#', class: 'btn btn-primary', disabled: true %></td>
+        <td class="text-center"><%= link_to '削除', base_station_path(base_station.id), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-primary' %></td>
+        <td><%= base_station.base_number %></td>
+        <td><%= base_station.base_name %></td>
+        <td><%= base_station.attendance_type %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#addBase" aria-expanded="false" aria-controls="addBase">拠点情報の追加</button>
+
+<div class="collapse" id="addBase">
+  <div class="card card-body">
+    <%= form_with(model: @base, url: base_stations_path, local: true) do |f| %>
+      <%= f.label :base_number, "拠点番号", class: "text-center" %>
+      <%= f.number_field :base_number, class: "form-control text-center" %>
+    
+      <%= f.label :base_name, "拠点名", class: "text-center" %>
+      <%= f.text_field :base_name, class: "form-control text-center" %>
+    
+      <%= f.label :attendance_type, "勤怠種類", class: "text-center" %>
+      <%= f.text_field :attendance_type, class: "form-control text-center" %>
+    
+      <%= f.submit "拠点の追加", class: "btn btn-primary btn-block" %>
+    <% end %>
+  </div>
+</div>
