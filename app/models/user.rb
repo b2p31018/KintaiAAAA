@@ -1,6 +1,6 @@
 class User < ApplicationRecord
+  require 'csv'
   has_many :attendances, dependent: :destroy
-  # 「remember_token」という仮想の属性を作成します。
   attr_accessor :remember_token
   before_save { self.email = email.downcase }
 
@@ -16,6 +16,48 @@ class User < ApplicationRecord
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
+  def self.import(file)
+    success_count = 0
+    failure_count = 0
+    
+    CSV.open(file.path, 'r:bom|utf-8', headers: true) do |csv|
+        csv.each do |row|
+            user_hash = row.to_hash
+      
+        # 入力データのバリデーションチェック
+        if user_hash['name'].blank? || user_hash['email'].blank? || user_hash['password'].blank?
+          Rails.logger.warn("Invalid data: #{user_hash.inspect}")
+          failure_count += 1
+          next
+        end
+
+        begin
+          # 新しいレコードを初期化するか、既存のレコードを見つける
+          user = find_or_initialize_by(email: user_hash['email'])
+          
+          # ユーザーの属性を設定
+          user.name = user_hash['name']
+          user.email = user_hash['email']
+          user.password = user_hash['password']
+          # 他の属性も同様にここに設定します
+          
+          # ユーザーを保存
+          if user.save
+            success_count += 1
+          else
+            Rails.logger.warn("Failed to save user #{user_hash['email']}: #{user.errors.full_messages.join(', ')}")
+            failure_count += 1
+          end
+        rescue ActiveRecord::RecordInvalid => e
+          Rails.logger.warn("Failed to create or update user from row #{user_hash.inspect}: #{e.message}")
+          failure_count += 1
+        end
+      end
+    end
+    
+    return { success: success_count, failure: failure_count }
+  end
+  
   # 渡された文字列のハッシュ値を返します。
   def User.digest(string)
     cost = 

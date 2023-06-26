@@ -1,10 +1,26 @@
 class UsersController < ApplicationController
+  before_action :admin_user_cannot_view_self, only: [:show]
   before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :correct_user, only: [:show, :edit, :update]
-  before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
+  before_action :correct_user, only: [:edit, :update]
+  before_action :admin_or_correct_user, only: [:edit_basic_info, :update_basic_info]
+  before_action :admin_user, only: [:destroy, :import]
   before_action :set_one_month, only: :show
 
+  def import
+    if params[:file]
+      result = User.import(params[:file])
+      if result[:failure] == 0
+        flash[:success] = "ユーザー情報が正常にインポートされました。成功したレコード数: #{result[:success]}"
+      else
+        flash[:warning] = "一部のレコードがインポートできませんでした。成功: #{result[:success]}, 失敗: #{result[:failure]}"
+      end
+    else
+      flash[:alert] = 'CSVファイルが選択されていません'
+    end
+    redirect_to users_path
+  end
+  
   def index
     @users = User.search_by_name(params[:name]).paginate(page: params[:page])
   end
@@ -75,11 +91,24 @@ class UsersController < ApplicationController
       params.require(:user).permit(:department, :basic_time, :work_time)
     end
 
-# 正しいユーザーかどうか確認します。
+  def admin_user_cannot_view_self
+    @user = User.find(params[:id])
+    if current_user.admin? && current_user == @user
+      redirect_to(root_url)
+    end
+  end
+  
   def correct_user
     @user = User.find(params[:id])
-    unless current_user?(@user) || current_user.admin?
+    if current_user != @user
       flash[:danger] = "アクセス権限がありません。"
+      redirect_to(root_url)
+    end
+  end
+
+  def admin_or_correct_user
+    @user = User.find(params[:id])
+    unless current_user.admin? || current_user == @user
       redirect_to(root_url)
     end
   end

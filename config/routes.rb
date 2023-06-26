@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   delete '/logout', to: 'sessions#destroy'
 
   resources :users do
+    # ここにCSVインポートのためのルートを追加します。
+    collection { post :import }
+    
     member do
       get 'edit_basic_info'
       patch 'update_basic_info'
@@ -17,5 +20,5 @@ Rails.application.routes.draw do
     resources :attendances, only: :update
   end
 
-  resources :base_stations, except: [:show, :edit, :update]
+  resources :base_stations, except: [:show, :edit]
 end
