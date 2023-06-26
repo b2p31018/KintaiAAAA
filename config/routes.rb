@@ -9,7 +9,10 @@ Rails.application.routes.draw do
 
   resources :users do
     # ここにCSVインポートのためのルートを追加します。
-    collection { post :import }
+    collection do
+      post :import
+      get :working
+    end
     
     member do
       get 'edit_basic_info'

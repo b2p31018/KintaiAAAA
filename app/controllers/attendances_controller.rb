@@ -13,6 +13,8 @@ class AttendancesController < ApplicationController
     if @attendance.started_at.nil?
       rounded_start_time = round_time(Time.current.change(sec: 0))
       if @attendance.update_attributes(started_at: rounded_start_time)
+        # is_working 属性を true に更新します。
+        @user.update(is_working: true)
         flash[:info] = "おはようございます！"
       else
         flash[:danger] = UPDATE_ERROR_MSG
@@ -20,6 +22,8 @@ class AttendancesController < ApplicationController
     elsif @attendance.finished_at.nil?
       rounded_end_time = round_time(Time.current.change(sec: 0))
       if @attendance.update_attributes(finished_at: rounded_end_time)
+        # is_working 属性を false に更新します。
+        @user.update(is_working: false)
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG

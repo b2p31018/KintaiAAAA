@@ -58,6 +58,10 @@ class User < ApplicationRecord
     return { success: success_count, failure: failure_count }
   end
   
+  def self.working_users
+    where(is_working: true, admin: false)
+  end
+  
   # 渡された文字列のハッシュ値を返します。
   def User.digest(string)
     cost = 

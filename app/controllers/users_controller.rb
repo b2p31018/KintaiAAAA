@@ -21,6 +21,10 @@ class UsersController < ApplicationController
     redirect_to users_path
   end
   
+  def working
+    @working_users = User.joins(:attendances).where("attendances.started_at IS NOT NULL AND attendances.finished_at IS NULL")
+  end
+  
   def index
     @users = User.search_by_name(params[:name]).paginate(page: params[:page])
   end
