@@ -8,8 +8,7 @@
       <%= submit_tag "CSVインポート", class: "btn btn-primary" %>
     <% end %>
   </div>
-  <div class="col-md-4">
-  </div>
+  <div class="col-md-4"></div>
 </div>
 
 <div class="col-md-10 col-md-offset-1">
@@ -20,17 +19,61 @@
         <% if current_user.admin? && !current_user?(user) %>
           <%= link_to "削除", user, method: :delete,
               data: { confirm: "削除してよろしいですか？" }, class: "btn btn-primary delete-button-custom" %>
+
           <div class="edit-button-container">
-            <%= link_to "編集", edit_basic_info_user_path(user), remote: true, class: "btn btn-primary btn-lg edit-button-custom edit-button-margin" %>
+            <%= link_to "編集", "#collapse#{user.id}", class: "btn btn-primary btn-lg edit-button-custom edit-button-margin", 
+                        "data-toggle" => "collapse", "aria-expanded" => "false", "aria-controls" => "collapse#{user.id}" %>
           </div>
         <% end %>
+
+        <div class="collapse" id="collapse<%= user.id %>">
+          <div class="card-body">
+            <%= form_with(model: user, local: true) do |f| %>
+              <%= render 'shared/error_messages', object: f.object %>
+
+              <%= f.label :name, "名前" %>
+              <%= f.text_field :name, class: "form-control" %>
+
+              <%= f.label :email, "メールアドレス" %>
+              <%= f.email_field :email, class: "form-control" %>
+
+              <%= f.label :department, "所属" %>
+              <%= f.text_field :department, class: "form-control" %>
+
+              <%= f.label :employee_number, "社員番号" %>
+              <%= f.text_field :employee_number, class: "form-control" %>
+
+              <%= f.label :card_id, "カードID" %>
+              <%= f.text_field :card_id, class: "form-control" %>
+              
+              <%= f.label :password, "パスワード" %>
+              <%= f.password_field :password, class: "form-control" %>
+
+              <%= f.label :password_confirmation, "パスワード確認" %>
+              <%= f.password_field :password_confirmation, class: "form-control" %>
+              
+              <%= f.label :basic_work_time, "基本勤務時間" %>
+              <%= f.time_field :basic_work_time, class: "form-control" %>
+
+
+              <%= f.label :start_time, "指定勤務開始時間" %>
+              <%= f.time_field :start_time, class: "form-control" %>
+
+              <%= f.label :end_time, "指定勤務終了時間" %>
+              <%= f.time_field :end_time, class: "form-control" %>
+
+              <div class="center">
+                <%= f.submit "更新", class: "btn btn-primary mt-3" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="divider"></div> <!-- 編集ボタンの下の仕切りの要素 -->
       </div>
-      <div class="divider"></div> <!-- 編集ボタンの下の仕切りの要素 -->
     <% end %>
   <% end %>
 </div>
-<!--モーダルウインドウ表示-->
-<div id="edit-basic-info" class="modal fade" tabindex="-1" role: dialog" aria-hidden="true"></div>
 
 <div class="pagination-container">
   <%= will_paginate @users %>

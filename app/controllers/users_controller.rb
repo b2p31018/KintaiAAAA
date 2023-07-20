@@ -1,9 +1,8 @@
 class UsersController < ApplicationController
-  before_action :admin_user_cannot_view_self, only: [:show]
   before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
+  before_action :admin_user_cannot_view_self, only: [:show]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :correct_user, only: [:edit, :update]
-  before_action :admin_or_correct_user, only: [:edit_basic_info, :update_basic_info]
+  before_action :admin_or_self, only: [:edit, :update, :edit_basic_info, :update_basic_info]
   before_action :admin_user, only: [:destroy, :import]
   before_action :set_one_month, only: :show
 
@@ -30,8 +29,8 @@ class UsersController < ApplicationController
   end
 
   def show
-    @worked_sum = @attendances.where.not(started_at: nil).count
-    @total_working_hours = @attendances.sum do |attendance|
+    @worked_sum = @user.attendances.where.not(started_at: nil).count
+    @total_working_hours = @user.attendances.sum do |attendance|
       if attendance.started_at.present? && attendance.finished_at.present?
         ((attendance.finished_at - attendance.started_at) / 3600).round(2)
       else
@@ -59,11 +58,12 @@ class UsersController < ApplicationController
   end
 
   def update
+    @user = User.find(params[:id])
     if @user.update_attributes(user_params)
       flash[:success] = "ユーザー情報を更新しました。"
-      redirect_to @user
+      redirect_to user_path(@user)
     else
-      render :edit      
+      render 'edit'
     end
   end
 
@@ -82,38 +82,33 @@ class UsersController < ApplicationController
     else
       flash[:danger] = "#{@user.name}の更新は失敗しました。<br>" + @user.errors.full_messages.join("<br>")
     end
-    redirect_to users_url
+    redirect_to user_path(@user)
   end
 
   private
+  
+    def set_user
+      @user = User.find(params[:id])
+    end
 
     def user_params
-      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation)
+      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation, :basic_work_time)
     end
 
     def basic_info_params
       params.require(:user).permit(:department, :basic_time, :work_time)
     end
 
-  def admin_user_cannot_view_self
-    @user = User.find(params[:id])
-    if current_user.admin? && current_user == @user
-      redirect_to(root_url)
+    def admin_user_cannot_view_self
+      if current_user.admin? && current_user == @user
+        redirect_to(root_url)
+      end
     end
-  end
-  
-  def correct_user
-    @user = User.find(params[:id])
-    if current_user != @user
-      flash[:danger] = "アクセス権限がありません。"
-      redirect_to(root_url)
+    
+    def admin_or_self
+      unless current_user.admin? || current_user == @user
+        flash[:danger] = "アクセス権限がありません。"
+        redirect_to(root_url)
+      end
     end
-  end
-
-  def admin_or_correct_user
-    @user = User.find(params[:id])
-    unless current_user.admin? || current_user == @user
-      redirect_to(root_url)
-    end
-  end
 end

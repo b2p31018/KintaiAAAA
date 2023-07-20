@@ -155,3 +155,50 @@ p {
 .modal-title-centered {
     text-align: center;
 }
+
+td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px; /* 上下左右のパディングを調整 */
+}
+
+.modal-title.text-center {
+  text-align: center;
+  width: 100%;
+}
+
+.modal-title {
+  font-size: 20px; /* フォントサイズを調整 */
+}
+
+.modal-dialog {
+    margin-top: 12%;
+}
+
+.modal-body input[type="time"],
+  .modal-body textarea {
+    width: 100%;
+}
+
+input[type="time"].rounded-input {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+
+.rounded-input {
+    border-radius: 5px; /* これが角を丸くするスタイルです。値を大きくするとより丸くなります。 */
+}
+
+.rounded-input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+    height: 30px;
+}
