@@ -1,3 +1,5 @@
+require 'csv'
+
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
   before_action :admin_user_cannot_view_self, only: [:show]
@@ -5,6 +7,20 @@ class UsersController < ApplicationController
   before_action :admin_or_self, only: [:edit, :update, :edit_basic_info, :update_basic_info]
   before_action :admin_user, only: [:destroy, :import]
   before_action :set_one_month, only: :show
+  
+  def export_csv
+    selected_month = params[:month] ? Date.strptime(params[:month], "%Y-%m") : Date.current
+    dates_in_month = (selected_month.beginning_of_month..selected_month.end_of_month)
+    weekdays_ja = %w[日 月 火 水 木 金 土]
+    csv_data = CSV.generate do |csv|
+      csv << ["日付", "出社時間", "退社時間"]
+      dates_in_month.each do |date|
+        csv << [date.strftime("%Y年%m月%d日") + "(#{weekdays_ja[date.wday]})", "", ""]
+      end
+    end
+    send_data(csv_data.encode(Encoding::SJIS), filename: "勤怠一覧.csv")
+  end
+
 
   def import
     if params[:file]
@@ -29,8 +45,12 @@ class UsersController < ApplicationController
   end
 
   def show
-    @worked_sum = @user.attendances.where.not(started_at: nil).count
-    @total_working_hours = @user.attendances.sum do |attendance|
+    @first_day = params[:date].nil? ? Date.current.beginning_of_month : params[:date].to_date
+    @last_day = @first_day.end_of_month
+  
+    @worked_sum = @user.attendances.where(worked_on: @first_day..@last_day).where.not(started_at: nil, finished_at: nil).count
+    
+    @total_working_hours = @user.attendances.where(worked_on: @first_day..@last_day).sum do |attendance|
       if attendance.started_at.present? && attendance.finished_at.present?
         ((attendance.finished_at - attendance.started_at) / 3600).round(2)
       else
@@ -74,6 +94,7 @@ class UsersController < ApplicationController
   end
 
   def edit_basic_info
+    @user = User.find(params[:id])
   end
 
   def update_basic_info
@@ -92,11 +113,11 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation, :basic_work_time)
+      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation, :employee_number, :card_id, :base_work_time, :start_time, :end_time)
     end
 
     def basic_info_params
-      params.require(:user).permit(:department, :basic_time, :work_time)
+      params.require(:user).permit(:name, :email, :department, :employee_number, :card_id, :base_work_time, :start_time, :end_time, :password, :password_confirmation)
     end
 
     def admin_user_cannot_view_self

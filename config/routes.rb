@@ -8,9 +8,9 @@ Rails.application.routes.draw do
   delete '/logout', to: 'sessions#destroy'
 
   resources :users do
-    # ここにCSVインポートのためのルートを追加します。
     collection do
       post :import
+      get :export_csv
       get :working
     end
     
