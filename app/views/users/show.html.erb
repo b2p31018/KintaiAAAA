@@ -96,7 +96,13 @@
           <td></td> <!-- 終了予定時間 (分) -->
           <td></td> <!-- 時間外時間 -->
           <td></td> <!-- 業務処理内容 -->
-          <td></td> <!-- 指示者確認印 -->
+          <td>
+            <% if day.overtime_request_to == "上長A" %>
+              上長Aに残業申請中
+            <% elsif day.overtime_request_to == "上長B" %>
+              上長Bに残業申請中
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>

@@ -9,11 +9,11 @@ class AttendancesController < ApplicationController
   def update
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
-    # 出勤時間が未登録であることを判定します。
+    
+    # 現存の出勤・退勤時間の処理
     if @attendance.started_at.nil?
       rounded_start_time = round_time(Time.current.change(sec: 0))
       if @attendance.update_attributes(started_at: rounded_start_time)
-        # is_working 属性を true に更新します。
         @user.update(is_working: true)
         flash[:info] = "おはようございます！"
       else
@@ -22,22 +22,31 @@ class AttendancesController < ApplicationController
     elsif @attendance.finished_at.nil?
       rounded_end_time = round_time(Time.current.change(sec: 0))
       if @attendance.update_attributes(finished_at: rounded_end_time)
-        # is_working 属性を false に更新します。
         @user.update(is_working: false)
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
       end
+    else
+      # 残業申請の処理
+      if params[:attendance] && params[:attendance][:overtime_request_to]
+        if @attendance.update(attendance_params)
+          flash[:info] = "#{params[:attendance][:overtime_request_to]}に残業申請しました。"
+        else
+          flash[:danger] = "残業申請に失敗しました。"
+        end
+      end
     end
+  
     redirect_to @user
   end
-
+  
   def edit_one_month
   end
 
   def update_one_month
     ActiveRecord::Base.transaction do
-      attendances_params.each do |id, item|
+      attendance_params.each do |id, item|
         attendance = Attendance.find(id)
         if item[:started_at].present? && item[:finished_at].present?
           if item[:finished_at] >= item[:started_at]
@@ -56,7 +65,8 @@ class AttendancesController < ApplicationController
     end
     flash[:success] = "1ヶ月分の勤怠情報を更新しました。"
     redirect_to user_url(date: params[:date])
-  rescue ActiveRecord::RecordInvalid
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "Error updating attendance: #{e.message}"
     flash[:danger] = "無効な入力データがあったため、更新をキャンセルしました。"
     redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
@@ -64,8 +74,8 @@ class AttendancesController < ApplicationController
   private
 
     # 1ヶ月分の勤怠情報を扱います。
-    def attendances_params
-      params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
+    def attendance_params
+      params.require(:user).permit(attendances: [:started_at, :finished_at, :overtime_request_to, :note])[:attendances]
     end
 
     # beforeフィルター

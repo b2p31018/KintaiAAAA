@@ -15,7 +15,10 @@ class User < ApplicationRecord
   validates :work_time, presence: true
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
-
+  
+  # enumの定義を追加
+  enum user_role: { general: 0, superior: 1, admin_role: 2 }
+  
   def self.import(file)
     success_count = 0
     failure_count = 0
