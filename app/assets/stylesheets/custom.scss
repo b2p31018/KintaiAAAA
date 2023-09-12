@@ -202,3 +202,18 @@ input[type="time"].rounded-input {
     width: 200px;
     height: 30px;
 }
+
+.notification {
+    margin-top: 10px;  /* 上側のマージン */
+    margin-bottom: 11px;  /* 下側のマージン */
+}
+
+.notification-link {
+    text-decoration: none;  /* 通常時は下線を消す */
+    color: inherit;         /* 通常のテキストカラーを継承する */
+}
+
+.notification-link:hover {
+    text-decoration: underline;  /* ホバー時は下線を付ける */
+    color: blue;                /* ホバー時のテキストカラーを青に変更する */
+}
