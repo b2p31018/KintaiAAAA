@@ -47,9 +47,9 @@ class UsersController < ApplicationController
   def show
     @first_day = params[:date].nil? ? Date.current.beginning_of_month : params[:date].to_date
     @last_day = @first_day.end_of_month
-  
+
     @worked_sum = @user.attendances.where(worked_on: @first_day..@last_day).where.not(started_at: nil, finished_at: nil).count
-    
+
     @total_working_hours = @user.attendances.where(worked_on: @first_day..@last_day).sum do |attendance|
       if attendance.started_at.present? && attendance.finished_at.present?
         ((attendance.finished_at - attendance.started_at) / 3600).round(2)
@@ -57,6 +57,8 @@ class UsersController < ApplicationController
         0
       end
     end
+    @supervisors = User.where(role: :superior)
+    @attendance = @user.attendances.find_by(worked_on: Date.today)
   end
 
   def new

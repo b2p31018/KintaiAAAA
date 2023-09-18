@@ -1,13 +1,26 @@
 class AttendancesController < ApplicationController
-  before_action :set_user, only: [:edit_one_month, :update_one_month]
+  before_action :set_user, only: [:update, :update_overtime, :edit_one_month]
   before_action :logged_in_user, only: [:update, :edit_one_month]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
   before_action :set_one_month, only: :edit_one_month
 
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
+  
+  def update_overtime
+    @attendance = Attendance.find(params[:id])
+  
+    if params[:attendance] && params[:attendance][:expected_finished_at]
+      if @attendance.update(expected_finished_at: params[:attendance][:expected_finished_at], overtime_request_to: params[:attendance][:overtime_request_to])
+        flash[:info] = "#{params[:attendance][:overtime_request_to]}に残業申請しました。"
+      else
+        flash[:danger] = "残業申請に失敗しました。"
+      end
+    end
+  
+    redirect_to @user
+  end
 
   def update
-    @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
     
     # 現存の出勤・退勤時間の処理
@@ -26,15 +39,6 @@ class AttendancesController < ApplicationController
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
-      end
-    else
-      # 残業申請の処理
-      if params[:attendance] && params[:attendance][:overtime_request_to]
-        if @attendance.update(attendance_params)
-          flash[:info] = "#{params[:attendance][:overtime_request_to]}に残業申請しました。"
-        else
-          flash[:danger] = "残業申請に失敗しました。"
-        end
       end
     end
   
@@ -75,14 +79,17 @@ class AttendancesController < ApplicationController
 
     # 1ヶ月分の勤怠情報を扱います。
     def attendance_params
-      params.require(:user).permit(attendances: [:started_at, :finished_at, :overtime_request_to, :note])[:attendances]
+      params.require(:user).permit(attendances: [:started_at, :finished_at, :overtime_request_to, :note, :expected_finished_at])[:attendances]
+    end
+    
+    def set_user
+      @user = User.find(params[:user_id] || params[:id])
     end
 
-    # beforeフィルター
 
     # 管理権限者、または現在ログインしているユーザーを許可します。
     def admin_or_correct_user
-      @user = User.find(params[:user_id]) if @user.blank?
+      @user = User.find(params[:user_id] || params[:id]) if @user.blank?
       unless current_user?(@user) || current_user.admin?
         flash[:danger] = "編集権限がありません。"
         redirect_to(root_url)

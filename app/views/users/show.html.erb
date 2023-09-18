@@ -30,17 +30,19 @@
     </tr>
   </table>
 </div>
-<div class="notification">
-  <h4><a href="#" class="notification-link">【所属長承認申請のお知らせ】</a></h4>
-</div>
+<% if logged_in? && current_user.superior? %>
+  <div class="notification">
+    <h4><a href="#" class="notification-link">【所属長承認申請のお知らせ】</a></h4>
+  </div>
 
-<div class="notification">
-  <h4><a href="#" class="notification-link">【勤怠変更申請のお知らせ】</a></h4>
-</div>
+  <div class="notification">
+    <h4><a href="#" class="notification-link">【勤怠変更申請のお知らせ】</a></h4>
+  </div>
 
-<div class="notification">
-  <h4><a href="#" class="notification-link">【残業申請のお知らせ】</a></h4>
-</div>
+  <div class="notification">
+    <h4><a href="#" class="notification-link">【残業申請のお知らせ】</a></h4>
+  </div>
+<% end %>
 <div class="btn-users-show">
   <%= link_to "勤怠を編集",attendances_edit_one_month_user_path(date: @first_day),class: "btn btn-primary" %> &nbsp;
   <%= link_to "CSV出力", export_csv_users_path, class: "btn btn-primary" %>
@@ -83,7 +85,7 @@
       <% @attendances.each do |day| %>
         <tr>
           <td>
-            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#overtimeModal" data-date="<%= l(day.worked_on, format: :short) %>">残業申請</a>
+            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#overtimeModal" data-id="<%= day.id %>" data-date="<%= l(day.worked_on, format: :short) %>" data-row-id="<%= day.id %>">残業申請</a>
           </td> 
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class="<%= weekday_classes(day.worked_on.wday) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
@@ -149,55 +151,39 @@
         </button>
       </div>
       <div class="modal-body">
-       <table class="table table-bordered table-condensed table-hover" id="table-attendances">
-          <thead>
-            <tr>
-              <th>日付</th>
-              <th>曜日</th>
-              <th>終了予定時間</th>
-              <th>翌日</th>
-              <th>業務処理内容</th>
-              <th>指示者確認㊞</th>
-            </tr>
-          </thead>
-          
-          <tbody>
-            <tr>
-              <td><a href="#" class="btn btn-primary" data-toggle="modal" data-target="#overtimeModal" data-date="2023-07-01">残業申請</a></td>
-              <td id="modal_day_of_week"></td>
-              <td><input type="time" id="end_time" name="end_time" class="rounded-input"></td>
-              <td><input type="checkbox" id="next_day" name="next_day"></td>
-              <td><textarea class="rounded-input"></textarea></td>
-              <td>
-                <select name="supervisor" id="supervisor" class="form-control">
-                  <option value="supervisor1"></option>
-                  <option value="supervisor2">上長A</option>
-                  <option value="supervisor3">上長B</option>
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">変更を送信する</button>
+        <!-- ここから form_for を使用してフォームを開始 -->
+        <%= form_for [@user, @attendance], url: update_overtime_user_attendance_path(@user, @attendance) do |f| %>
+          <table class="table table-bordered table-condensed table-hover" id="table-attendances">
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>曜日</th>
+                <th>終了予定時間</th>
+                <th>翌日</th>
+                <th>業務処理内容</th>
+                <th>指示者確認㊞</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="modal_date"></td> 
+                <td id="modal_day_of_week"></td>
+                <!-- 以下で終了予定時間をf.time_selectを用いて選択できるように変更 -->
+                <td><%= f.time_select :expected_finished_at, default: Time.current, minute_step: 15, required: true %></td>
+                <!-- 翌日のチェックボックスをf.check_boxを用いて追加 -->
+                <td><%= f.check_box :next_day %></td>
+                <!-- 業務処理内容をf.text_areaを用いて追加 -->
+                <td><%= f.text_area :work_details, class: "rounded-input" %></td>
+                <!-- 指示者選択をf.selectを用いて選択できるように変更 -->
+                <td><%= f.select :overtime_request_to, @supervisors.collect { |s| [s.name, s.id] }, prompt: "選択してください" %></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="modal-footer">
+            <%= f.submit "変更を送信する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
-
-<script>
-  var daysOfTheWeek = ['月', '火', '水', '木', '金', '土', '日'];
-
-  document.querySelectorAll('a[data-toggle="modal"][data-target="#overtimeModal"]').forEach(function(button) {
-  button.addEventListener('click', function() {
-    var dateStr = this.getAttribute('data-date');
-    document.querySelector('#overtimeModal tbody tr td:first-child').innerText = dateStr;
-
-    var dateObj = new Date(dateStr);
-    var dayOfWeek = (dateObj.getUTCDay() + 6) % 7;  // 曜日を取得し、ひとつずらす
-
-    document.querySelector('#modal_day_of_week').innerText = daysOfTheWeek[dayOfWeek];
-  });
-});
-</script>
