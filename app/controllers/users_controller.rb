@@ -45,11 +45,12 @@ class UsersController < ApplicationController
   end
 
   def show
-    @first_day = params[:date].nil? ? Date.current.beginning_of_month : params[:date].to_date
-    @last_day = @first_day.end_of_month
-
+    @user = User.find(params[:id])
+    selected_date = params[:date] ? Date.parse(params[:date]) : Date.current
+    @first_day = selected_date.beginning_of_month
+    @last_day = selected_date.end_of_month
+    @attendances = @user.attendances.where(worked_on: @first_day..@last_day)
     @worked_sum = @user.attendances.where(worked_on: @first_day..@last_day).where.not(started_at: nil, finished_at: nil).count
-
     @total_working_hours = @user.attendances.where(worked_on: @first_day..@last_day).sum do |attendance|
       if attendance.started_at.present? && attendance.finished_at.present?
         ((attendance.finished_at - attendance.started_at) / 3600).round(2)

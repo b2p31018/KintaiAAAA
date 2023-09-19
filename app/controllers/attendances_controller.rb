@@ -8,9 +8,17 @@ class AttendancesController < ApplicationController
   
   def update_overtime
     @attendance = Attendance.find(params[:id])
-  
+    
+    if params[:date]
+      @date = Date.parse(params[:date])  # 日付を受け取る
+    else
+      # 何らかのデフォルトの日付やエラーメッセージを設定するか、処理を終了
+      redirect_to user_path(current_user), alert: "日付が入力されていません" and return
+    end
+
     if params[:attendance] && params[:attendance][:expected_finished_at]
-      if @attendance.update(expected_finished_at: params[:attendance][:expected_finished_at], overtime_request_to: params[:attendance][:overtime_request_to])
+      if @attendance.update(expected_finished_at: params[:attendance][:expected_finished_at], 
+                            overtime_request_to: params[:attendance][:overtime_request_to])
         flash[:info] = "#{params[:attendance][:overtime_request_to]}に残業申請しました。"
       else
         flash[:danger] = "残業申請に失敗しました。"
@@ -89,20 +97,19 @@ class AttendancesController < ApplicationController
 
     # 管理権限者、または現在ログインしているユーザーを許可します。
     def admin_or_correct_user
-      @user = User.find(params[:user_id] || params[:id]) if @user.blank?
       unless current_user?(@user) || current_user.admin?
         flash[:danger] = "編集権限がありません。"
         redirect_to(root_url)
       end  
     end
-    
+
     def round_time(time)
-      minutes = time.min
-      if minutes < 15
+      case time.min
+      when 0...15
         time.change(min: 0)
-      elsif minutes < 30
+      when 15...30
         time.change(min: 15)
-      elsif minutes < 45
+      when 30...45
         time.change(min: 30)
       else
         time.change(min: 45)

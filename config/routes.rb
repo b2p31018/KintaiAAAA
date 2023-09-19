@@ -1,3 +1,4 @@
+
 Rails.application.routes.draw do
   root 'static_pages#top'
   get '/signup', to: 'users#new'
@@ -13,7 +14,7 @@ Rails.application.routes.draw do
       get :export_csv
       get :working
     end
-    
+
     member do
       get 'edit_basic_info'
       patch 'update_basic_info'

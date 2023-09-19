@@ -217,3 +217,32 @@ input[type="time"].rounded-input {
     text-decoration: underline;  /* ホバー時は下線を付ける */
     color: blue;                /* ホバー時のテキストカラーを青に変更する */
 }
+
+.time-select-cell select {
+  border-radius: 5px; /* 角を丸くする */
+  height: 30px;       /* 高さを30pxに設定 */
+}
+
+.no-resize {
+  resize: none; /* リサイズ不可 */
+  width: 100%;  /* 枠の幅を100%に設定 */
+  height: 100%; /* 枠の高さを100%に設定 */
+  border: 1px solid #000; /* 枠線を黒くする */
+  box-sizing: border-box; /* 枠線を含めたサイズを100%にする */
+}
+
+/* 業務内容テキストエリアのスタイル */
+.textarea-work-details {
+  resize: none; 
+  width: 80%;  /* 例：80%に設定 */
+  height: 30px; /* 例：30pxに設定 */
+  border: 1px solid #000;
+  box-sizing: border-box;
+}
+
+/* 指示者確認ドロップダウンのスタイル */
+.select-instructor {
+  width: 50%;  /* 例：80%に設定 */
+  height: 30px; /* 例：30pxに設定 */
+  box-sizing: border-box;
+}
