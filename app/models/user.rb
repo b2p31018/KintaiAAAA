@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   require 'csv'
   has_many :attendances, dependent: :destroy
+  has_many :requested_attendances, class_name: 'Attendance', foreign_key: 'superior_id'  # 追加
   attr_accessor :remember_token
   before_save { self.email = email.downcase }
 
@@ -16,8 +17,33 @@ class User < ApplicationRecord
   has_secure_password
   validates :password, presence:true, length: { minimum: 6 }, allow_nil: true
   
-  # enumの定義を追加
   enum role: { general: 0, superior: 1, admin_role: 2 }
+  
+  def overtime_notifications_count
+    # この例では、attendanceが承認待ちのものをカウントしています。
+    # 必要に応じて適切な条件を設定してください。
+    self.attendances.where(status: "pending").count
+  end
+  
+  def unconfirmed_overtime_changes_count
+    attendances.where(overtime_changed: true).count
+  end
+  
+  def unconfirmed_overtime_changes_from_other_superior
+    # 上長Aと上長BのIDを定義 (ここは実際のIDに変更してください)
+    superior_a_id = 1
+    superior_b_id = 2
+  
+    # 現在のユーザーが上長Aなら上長Bから、上長Bなら上長Aからの承認待ちの申請を取得
+    if self.id == superior_a_id
+      attendances.where(overtime_notified: false, approved_by_id: superior_b_id).count
+    elsif self.id == superior_b_id
+      attendances.where(overtime_notified: false, approved_by_id: superior_a_id).count
+    else
+      0  # 一般ユーザーの場合は0を返す
+    end
+  end
+
   
   def self.import(file)
     success_count = 0

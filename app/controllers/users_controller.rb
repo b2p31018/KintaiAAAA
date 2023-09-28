@@ -45,7 +45,6 @@ class UsersController < ApplicationController
   end
 
   def show
-    @user = User.find(params[:id])
     selected_date = params[:date] ? Date.parse(params[:date]) : Date.current
     @first_day = selected_date.beginning_of_month
     @last_day = selected_date.end_of_month
@@ -60,6 +59,12 @@ class UsersController < ApplicationController
     end
     @supervisors = User.where(role: :superior)
     @attendance = @user.attendances.find_by(worked_on: Date.today)
+
+    # 上長の場合、変更された残業申請をカウント
+    if current_user.superior?
+      @overtime_notifications_count = current_user.overtime_notifications_count
+      @overtime_changed_count = Attendance.where(overtime_request_to: current_user.name, overtime_changed: true).count
+    end
   end
 
   def new

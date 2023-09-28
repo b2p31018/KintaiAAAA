@@ -1,5 +1,4 @@
 module AttendancesHelper
-
   def attendance_state(attendance)
     # 受け取ったAttendanceオブジェクトが当日と一致するか評価します。
     if Date.current == attendance.worked_on
@@ -13,5 +12,11 @@ module AttendancesHelper
   # 出勤時間と退勤時間を受け取り、在社時間を計算して返します。
   def working_times(start, finish)
     format("%.2f", (((finish - start) / 60) / 60.0))
+  end
+
+  # ヘルパーメソッドで時間の丸め処理を行う
+  def round_time(time, interval = 15.minutes)
+    rounded_minutes = (time.min / interval).round * interval
+    time.change(min: rounded_minutes, sec: 0)
   end
 end

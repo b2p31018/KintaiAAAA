@@ -203,21 +203,6 @@ input[type="time"].rounded-input {
     height: 30px;
 }
 
-.notification {
-    margin-top: 10px;  /* 上側のマージン */
-    margin-bottom: 11px;  /* 下側のマージン */
-}
-
-.notification-link {
-    text-decoration: none;  /* 通常時は下線を消す */
-    color: inherit;         /* 通常のテキストカラーを継承する */
-}
-
-.notification-link:hover {
-    text-decoration: underline;  /* ホバー時は下線を付ける */
-    color: blue;                /* ホバー時のテキストカラーを青に変更する */
-}
-
 .time-select-cell select {
   border-radius: 5px; /* 角を丸くする */
   height: 30px;       /* 高さを30pxに設定 */
@@ -245,4 +230,9 @@ input[type="time"].rounded-input {
   width: 50%;  /* 例：80%に設定 */
   height: 30px; /* 例：30pxに設定 */
   box-sizing: border-box;
+}
+
+/* application.css */
+.left-aligned-heading {
+  text-align: left;
 }

@@ -1,48 +1,6 @@
 <% provide(:title, @user.name) %>
-<div>
-  <table class="table table-bordered table-condensed user-table">
-    <tr>
-      <td>
-        <%= link_to "⇦ 前月へ", user_path(@user, date: @first_day.prev_month), class: "btn btn-primary" %>
-        【<%= l(@first_day, format: :middle) %>】勤怠管理表
-        <%= link_to "次月へ ⇨", user_path(@user, date: @first_day.next_month), class: "btn btn-primary" %>
-      </td>
-      <td>
-        指定勤務開始時間：9:00<br/>
-        指定勤務終了時間：18:00
-      </td>
-
-      <td colspan="3" style="text-align: center; vertical-align: middle;">
-          基本時間：<%= format_basic_info(@user.basic_time) %>
-      </td>
-      <td style="text-align: center; vertical-align: middle;">
-        初日：<%= l(@first_day, format: :short) %>
-      </td>
-    </tr>
-
-    <tr>
-      <td>所属：<%= @user.department.present? ? @user.department : "未所属" %></td>
-      <td>氏名：<%= @user.name %></td>
-      <td>コード</td>
-      <td><%= @user.id %></td>
-      <td>出勤日数：<%= @worked_sum %>日</td>
-      <td>締め：<%= l(@last_day, format: :short) %></td>
-    </tr>
-  </table>
-</div>
-<% if logged_in? && current_user.superior? %>
-  <div class="notification">
-    <h4><a href="#" class="notification-link">【所属長承認申請のお知らせ】</a></h4>
-  </div>
-
-  <div class="notification">
-    <h4><a href="#" class="notification-link">【勤怠変更申請のお知らせ】</a></h4>
-  </div>
-
-  <div class="notification">
-    <h4><a href="#" class="notification-link">【残業申請のお知らせ】</a></h4>
-  </div>
-<% end %>
+<%= render 'user_info' %>
+<h2 class="left-aligned-heading">【残業申請のお知らせ】</h2>
 <div class="btn-users-show">
   <%= link_to "勤怠を編集",attendances_edit_one_month_user_path(date: @first_day),class: "btn btn-primary" %> &nbsp;
   <%= link_to "CSV出力", export_csv_users_path, class: "btn btn-primary" %>
@@ -106,15 +64,16 @@
             <% end %>
           </td>
           <td><%= day.note %></td> <!-- 備考 -->
-                    <td></td> <!-- 終了予定時間 (時) -->
-          <td></td> <!-- 終了予定時間 (分) -->
+          <td><%= day.expected_finished_at.present? ? day.expected_finished_at.strftime('%H') : '' %></td>
+          <td><%= day.expected_finished_at.present? ? day.expected_finished_at.strftime('%M') : '' %></td>
           <td></td> <!-- 時間外時間 -->
-          <td></td> <!-- 業務処理内容 -->
+          <td><%= day.work_details.present? ? day.work_details : '' %></td>
           <td>
-            <% if day.overtime_request_to == "上長A" %>
-              上長Aに残業申請中
-            <% elsif day.overtime_request_to == "上長B" %>
-              上長Bに残業申請中
+            <% if day.overtime_request_to.present? %>
+              <% superior = User.find(day.overtime_request_to) %>
+              <%= superior.name %>に残業申請中
+            <% else %>
+              
             <% end %>
           </td>
         </tr>
@@ -147,13 +106,14 @@
     <div class="modal-dialog" style="max-width: 90%; width: 70%; max-height: 80%; height: 70%;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title text-center" id="overtimeModalLabel_<%= attendance.id %>">【残業申請】</h5>
+          <h5 class="modal-title text-center" id="overtimeModalLabel_<%= attendance.id %>">valid_reason":"Malformed citation 【残業申請】"}``&#8203;</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <%= form_for attendance, url: update_overtime_user_attendance_path(@user, attendance), method: :patch do |f| %>
+          <%= form_for attendance, url: update_overtime_user_attendance_path(@user, attendance), method: :patch, remote: true do |f| %>
+            <%= f.hidden_field :overtime_status, value: 'pending' %>
             <table class="table table-bordered table-condensed table-hover" id="table-attendances">
               <thead>
                 <tr>
@@ -172,7 +132,15 @@
                   <td class="time-select-cell"><%= f.time_select :expected_finished_at, default: Time.current, minute_step: 15, required: true %></td>
                   <td><%= f.check_box :next_day %></td>
                   <td><%= f.text_area :work_details, class: 'textarea-work-details' %></td>
-                  <td><%= f.select :overtime_request_to, @supervisors.collect { |s| [s.name, s.id] }, { prompt: "選択してください" }, class: 'select-instructor' %></td>
+                  <td>
+                    <% if current_user.name == "上長A" %>
+                      <%= f.select :overtime_request_to, @supervisors.reject { |s| s.name == "上長A" }.collect { |s| [s.name, s.id] }, { prompt: "選択してください" }, class: 'select-instructor' %>
+                    <% elsif current_user.name == "上長B" %>
+                      <%= f.select :overtime_request_to, @supervisors.reject { |s| s.name == "上長B" }.collect { |s| [s.name, s.id] }, { prompt: "選択してください" }, class: 'select-instructor' %>
+                    <% else %>
+                      <%= f.select :overtime_request_to, @supervisors.collect { |s| [s.name, s.id] }, { prompt: "選択してください" }, class: 'select-instructor' %>
+                    <% end %>
+                  </td>
                 </tr>
               </tbody>
             </table>

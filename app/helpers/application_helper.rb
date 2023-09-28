@@ -18,4 +18,13 @@ module ApplicationHelper
       ''
     end
   end
+  
+  def notification_items(overtime_changed_count)
+    [
+      { name: "所属長承認申請", count: nil },
+      { name: "勤怠変更申請", count: nil },
+      { name: "残業申請", count: overtime_changed_count }
+    ]
+  end
+
 end

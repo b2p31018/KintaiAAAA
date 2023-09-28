@@ -1,3 +1,4 @@
+# config/routes.rb
 
 Rails.application.routes.draw do
   root 'static_pages#top'
@@ -20,6 +21,7 @@ Rails.application.routes.draw do
       patch 'update_basic_info'
       get 'attendances/edit_one_month'
       patch 'attendances/update_one_month'
+      get 'unconfirmed_overtime'  # こちらを追加
     end
 
     resources :attendances, only: :update do
