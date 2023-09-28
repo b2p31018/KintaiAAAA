@@ -1,7 +1,14 @@
 <% provide(:title, @user.name) %>
 <%= render 'user_info' %>
-<h2 class="left-aligned-heading">【残業申請のお知らせ】</h2>
 <div class="btn-users-show">
+  <% if @overtime && @overtime >= 1 %>
+    <div class="red-group">
+      <p><%= link_to  "【残業申請のお知らせ】", edit_overtime_notice_user_attendance_path(@user, @overtime), remote: true, class: "notice" %><span class="red_box"><%= "#{@overtime}件の通知があります"%></span></p>
+    </div>
+  <% else %>
+    <p class="notice">【残業申請のお知らせ】</p>
+  <% end %>
+
   <%= link_to "勤怠を編集",attendances_edit_one_month_user_path(date: @first_day),class: "btn btn-primary" %> &nbsp;
   <%= link_to "CSV出力", export_csv_users_path, class: "btn btn-primary" %>
   <%= link_to "勤怠修正ログ",attendances_edit_one_month_user_path(@user, @attendance),class: "btn btn-primary" %>
@@ -106,13 +113,13 @@
     <div class="modal-dialog" style="max-width: 90%; width: 70%; max-height: 80%; height: 70%;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title text-center" id="overtimeModalLabel_<%= attendance.id %>">valid_reason":"Malformed citation 【残業申請】"}``&#8203;</h5>
+          <h5 class="modal-title text-center" id="overtimeModalLabel_<%= attendance.id %>">【残業申請】</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <%= form_for attendance, url: update_overtime_user_attendance_path(@user, attendance), method: :patch, remote: true do |f| %>
+          <%= form_for attendance, url: update_overtime_user_attendance_path(@user, attendance), method: :patch do |f| %>
             <%= f.hidden_field :overtime_status, value: 'pending' %>
             <table class="table table-bordered table-condensed table-hover" id="table-attendances">
               <thead>

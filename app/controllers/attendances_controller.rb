@@ -11,27 +11,28 @@ class AttendancesController < ApplicationController
 
   def update_overtime
     @attendance = @user.attendances.find(params[:id])
-  
+    
+    # 終了予定時間や他の項目を更新する
     if @attendance.update(overtime_params)
       messages = []
-      # 終了予定時間が更新された場合
-      if @attendance.previous_changes.key?(:expected_finished_at)
-        messages << "終了予定時間を更新しました。"
-      end
-      # 業務処理内容が更新された場合
-      if @attendance.previous_changes.key?(:work_details)
-        messages << "業務内容を更新しました。"
-      end
-      # 通知の状態を更新
       if SUPERIORS.include?(@attendance.overtime_request_to) && !@attendance.overtime_notified?
         @attendance.update(overtime_notified: true)
         messages << "#{@attendance.overtime_request_to}への通知を完了しました。"
       end
   
-      # ここに時間の変更内容を保存する処理を追加します
-      if @attendance.previous_changes.key?(:expected_finished_at)
-        time = @attendance.expected_finished_at
-        @attendance.update(finish_time: "#{time.strftime('%H')}:#{time.strftime('%M')}")
+      if params[:indicater_reply]
+        case params[:indicater_reply]
+        when "なし"
+          @attendance.update(overtime_finished_at: nil, tomorrow: nil, overtime_work: nil, indicater_check: nil)
+          messages << "残業申請を受け付けませんでした。"
+        when "承認"
+          @attendance.indicater_check_anser = "残業申請を承認しました"
+          messages << "残業申請を承認しました。"
+        when "否認"
+          @attendance.update(overtime_finished_at: nil, tomorrow: nil, overtime_work: nil, indicater_check: nil)
+          @attendance.indicater_check_anser = "残業申請を否認しました"
+          messages << "残業申請を否認しました。"
+        end
       end
   
       flash[:success] = messages.join(' ') unless messages.empty?
@@ -39,13 +40,9 @@ class AttendancesController < ApplicationController
       flash[:danger] = "更新に失敗しました: " + @attendance.errors.full_messages.join(', ')
     end
   
-    # JSONレスポンスを返す
-    respond_to do |format|
-      format.json { render json: { message: flash[:success], errors: flash[:danger] } }
-    end
-    
     redirect_to user_path(@user)
   end
+
 
   def update
     @attendance = @user.attendances.find(params[:id])
