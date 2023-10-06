@@ -1,0 +1,35 @@
+<%= form_with(model: user, url: update_index_user_path(user), local: true, method: :patch) do |f| %>
+  <%= render 'shared/error_messages', object: user %>
+  
+  <%= f.label :name, "名前", class: "label-#{yield(:class_text)}" %>
+  <%= f.text_field :name, class: "form-control" %>
+  
+  <%= f.label :email, "メールアドレス", class: "label-#{yield(:class_text)}" %>
+  <%= f.email_field :email, class: "form-control" %>
+  
+  <%= f.label :affiliation, "所属", class: "label-#{yield(:class_text)}" %>
+  <%= f.text_field :affiliation, class: "form-control" %>
+  
+  <%= f.label :employee_number, "社員番号", class: "label-#{yield(:class_text)}" %>
+  <%= f.number_field :employee_number, class: "form-control", min: 0 %>
+  
+  <%= f.label :uid, "UID", class: "label-#{yield(:class_text)}" %>
+  <%= f.number_field :uid, class: "form-control", min: 0  %>
+  
+  <%= f.label :password, "パスワード", class: "label-#{yield(:class_text)}" %>
+  <%= f.password_field :password, class: "form-control" %>
+  
+  <%= f.label :password_confirmation, "パスワード確認", class: "label-#{yield(:class_text)}" %>
+  <%= f.password_field :password_confirmation, class: "form-control" %>
+  
+  <%= f.label :basic_work_time, "基本勤務時間", class: "label-#{yield(:class_text)}" %>
+  <%= f.time_field :basic_work_time, class: "form-control" %>
+  
+  <%= f.label :designated_work_start_time, "指定勤務開始時間", class: "label-#{yield(:class_text)}" %>
+  <%= f.time_field :designated_work_start_time, class: "form-control" %>
+  
+  <%= f.label :designated_work_end_time, "指定勤務終了時間", class: "label-#{yield(:class_text)}" %>
+  <%= f.time_field :designated_work_end_time, class: "form-control" %>
+  
+  <%= f.submit yield(:button_text), class: "btn btn-primary btn-block btn-#{yield(:class_text)}" %>
+<% end %>

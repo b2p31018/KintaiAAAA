@@ -1,72 +1,34 @@
-require 'csv'
-
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_user_cannot_view_self, only: [:show]
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_or_self, only: [:edit, :update, :edit_basic_info, :update_basic_info]
-  before_action :admin_user, only: [:destroy, :import]
+  before_action :set_user, only: [:show, :edit, :update, :update_index, :destroy, :edit_basic_info, :update_basic_info]
+  before_action :logged_in_user, only: [:index, :edit, :update, :update_index, :destroy, :edit_basic_info, :update_basic_info]
+  before_action :correct_user, only: [:edit, :update]
+  before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info, :index,:edit_basic_s_info, :working]
+  before_action :admin_or_correct_user, only: :show
   before_action :set_one_month, only: :show
-  
-  def export_csv
-    selected_month = params[:month] ? Date.strptime(params[:month], "%Y-%m") : Date.current
-    dates_in_month = (selected_month.beginning_of_month..selected_month.end_of_month)
-    weekdays_ja = %w[日 月 火 水 木 金 土]
-    csv_data = CSV.generate do |csv|
-      csv << ["日付", "出社時間", "退社時間"]
-      dates_in_month.each do |date|
-        csv << [date.strftime("%Y年%m月%d日") + "(#{weekdays_ja[date.wday]})", "", ""]
-      end
-    end
-    send_data(csv_data.encode(Encoding::SJIS), filename: "勤怠一覧.csv")
-  end
+  before_action :admin_not_user, only: [:show]
 
-
-  def import
-    if params[:file]
-      result = User.import(params[:file])
-      if result[:failure] == 0
-        flash[:success] = "ユーザー情報が正常にインポートされました。成功したレコード数: #{result[:success]}"
-      else
-        flash[:warning] = "一部のレコードがインポートできませんでした。成功: #{result[:success]}, 失敗: #{result[:failure]}"
-      end
-    else
-      flash[:alert] = 'CSVファイルが選択されていません'
-    end
-    redirect_to users_path
-  end
-  
-  def working
-    @working_users = User.joins(:attendances).where("attendances.started_at IS NOT NULL AND attendances.finished_at IS NULL")
-  end
-  
   def index
-    @users = User.search_by_name(params[:name]).paginate(page: params[:page])
+    
+
+    # @users = User.paginate(page: params[:page])
+    @users = User.where.not(id:1).where('name LIKE(?)', "%#{params[:name]}%").paginate(page: params[:page], per_page: 20)
   end
 
   def show
-    selected_date = params[:date] ? Date.parse(params[:date]) : Date.current
-    @first_day = selected_date.beginning_of_month
-    @last_day = selected_date.end_of_month
-    @attendances = @user.attendances.where(worked_on: @first_day..@last_day)
-    @worked_sum = @user.attendances.where(worked_on: @first_day..@last_day).where.not(started_at: nil, finished_at: nil).count
-    @total_working_hours = @user.attendances.where(worked_on: @first_day..@last_day).sum do |attendance|
-      if attendance.started_at.present? && attendance.finished_at.present?
-        ((attendance.finished_at - attendance.started_at) / 3600).round(2)
-      else
-        0
-      end
-    end
-    @supervisors = User.where(role: :superior)
-    @attendance = @user.attendances.find_by(worked_on: Date.today)
-
-    # 上長の場合、変更された残業申請をカウント
-    if current_user.superior?
-      @overtime_notifications_count = current_user.overtime_notifications_count
-      @overtime_changed_count = Attendance.where(overtime_request_to: current_user.name, overtime_changed: true).count
-    end
+    @worked_sum = @attendances.where.not(started_at: nil).count
+    @overtime = Attendance.where(indicater_reply: "申請中", indicater_check: @user.name).count
+    @change = Attendance.where(indicater_reply_edit: "申請中", indicater_check_edit: @user.name).count
+    @month = Attendance.where(indicater_reply_month: "申請中", indicater_check_month: @user.name).count
+    @superior = User.where(superior: true).where.not( id: current_user.id  )
+    @attendance = @user.attendances.find_by(worked_on: @first_day)
+    # csv 出力
+    respond_to do |format|
+      format.html 
+      filename = @user.name + ":" + l(@first_day, format: :middle) + "分" + " " + "勤怠"
+      format.csv { send_data render_to_string, type: 'text/csv; charset=shift_jis', filename: "#{filename}.csv" }  
+    end   
   end
-
+  
   def new
     @user = User.new
   end
@@ -81,19 +43,54 @@ class UsersController < ApplicationController
       render :new
     end
   end
-
+  
+   def import
+    if params[:file].blank?
+      flash[:danger]= "csvファイルを選択して下さい"
+      redirect_to users_url
+    elsif
+      File.extname(params[:file].original_filename) != ".csv"
+      flash[:danger]= "csvファイル以外は出力できません"
+      redirect_to users_url
+    else
+      User.import(params[:file])
+      flash[:success]= "インポートが完了しました"
+      redirect_to users_url
+    end 
+   
+   rescue ActiveRecord::RecordInvalid
+    flash[:danger]= "不正なファイルのため、インポートに失敗しました"
+    redirect_to users_url
+   rescue ActiveRecord::RecordNotUnique
+    flash[:danger]= "既にインポート済です"
+    redirect_to users_url
+   end
   def edit
   end
+  
+   def working 
+    # ユーザーモデルから全てのユーザーに紐づいた勤怠たちを代入
+    @users = User.all.includes(:attendances).where.not(id: 1)
+   end 
 
   def update
-    @user = User.find(params[:id])
-    if @user.update_attributes(user_params)
+    if @user.update(user_params)
       flash[:success] = "ユーザー情報を更新しました。"
-      redirect_to user_path(@user)
+      redirect_to @user
     else
-      render 'edit'
+      render :edit      
     end
   end
+  
+  def update_index
+    if @user.update(user_params)
+      flash[:success] = "ユーザー情報を更新しました。"
+      redirect_to users_url
+    else
+      flash[:danger] = "更新に失敗しました。"
+      redirect_to users_url
+    end 
+  end 
 
   def destroy
     @user.destroy
@@ -102,42 +99,43 @@ class UsersController < ApplicationController
   end
 
   def edit_basic_info
-    @user = User.find(params[:id])
+  end
+  def edit_basic_s_info
   end
 
   def update_basic_info
-    if @user.update_attributes(basic_info_params)
+    if @user.update(basic_info_params)
       flash[:success] = "#{@user.name}の基本情報を更新しました。"
     else
       flash[:danger] = "#{@user.name}の更新は失敗しました。<br>" + @user.errors.full_messages.join("<br>")
     end
-    redirect_to user_path(@user)
+    redirect_to users_url
+  end
+  
+  def verifacation
+    @user = User.find(params[:id])
+    # if @user.id == 1
+    #   flash[:danger] = "閲覧できません"
+    #   redirect_to root_url
+    # else  
+      
+    # # お知らせモーダルの確認ボタンを押した時にparams[：worked_on]にday.worked_onを入れて飛ばしたので、それをfind_byで取り出している
+    @attendance = Attendance.find_by(worked_on: params[:worked_on])
+    @first_day = @attendance.worked_on.beginning_of_month
+    @last_day = @first_day.end_of_month
+    @attendances = @user.attendances.where(worked_on: @first_day..@last_day).order(:worked_on)
+    # @worked_sum = @attendances.where.not(started_at: nil).count
+    # end
   end
 
   private
-  
-    def set_user
-      @user = User.find(params[:id])
-    end
 
     def user_params
-      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation, :employee_number, :card_id, :base_work_time, :start_time, :end_time)
+      params.require(:user).permit(:name, :email, :affiliation,:employee_number,:uid, :password, 
+        :password_confirmation, :basic_work_time, :designated_work_start_time, :designated_work_end_time)
     end
 
     def basic_info_params
-      params.require(:user).permit(:name, :email, :department, :employee_number, :card_id, :base_work_time, :start_time, :end_time, :password, :password_confirmation)
-    end
-
-    def admin_user_cannot_view_self
-      if current_user.admin? && current_user == @user
-        redirect_to(root_url)
-      end
-    end
-    
-    def admin_or_self
-      unless current_user.admin? || current_user == @user
-        flash[:danger] = "アクセス権限がありません。"
-        redirect_to(root_url)
-      end
+      params.require(:user).permit(:department, :basic_time, :work_time)
     end
 end

@@ -1,2 +1,0 @@
-module BaseStationsHelper
-end

@@ -1,18 +1,23 @@
-<h1>出勤中の社員</h1>
+<% provide(:title, "working") %>
+<h1>出勤中社員一覧</h1>
 
-<table class="table table-bordered text-center">
-  <thead>
+<div>
+  <table class="table table-bordered table-condensed id="table-attendance-index">
     <tr>
-      <th class="text-center">社員番号</th>
-      <th class="text-center">名前</th>
+      <th>社員番号</th>
+      <th>名前</th>
     </tr>
-  </thead>
-  <tbody>
-    <% @working_users.each do |user| %>
-      <tr>
-        <td><%= user.id %></td>
-        <td><%= user.name %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+
+    <% @users.each do |user| %>
+      <% user.attendances.each do |attendance| %>
+        <% if (Date.current == attendance.worked_on) && 
+        attendance.started_at != nil && attendance.finished_at == nil %>
+    <tr>
+      <td><%=user.employee_number %></td>
+      <td><%=user.name %></td>
+    </tr>
+        <%end%>  
+      <%end%>  
+    <%end%>  
+  </table>
+</div>

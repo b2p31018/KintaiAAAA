@@ -5,6 +5,19 @@
   text-align: center;
 }
 
+.notice {
+color:red;
+
+}
+
+.red_box {
+  color:red;
+  padding: 0.2em 0.2em;
+  font-weight: bold;
+  border: solid 3px red
+  
+  }
+
 /* ユーザー情報下ボタン */
 
 .btn-users-show {
@@ -24,6 +37,7 @@
     text-align: center;
   }
 }
+
 
 /* 入力フォーム */
 
