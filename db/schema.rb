@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20231004122958) do
+ActiveRecord::Schema.define(version: 20231009095824) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -48,39 +48,28 @@ ActiveRecord::Schema.define(version: 20231004122958) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "overtime_request_to"
-    t.datetime "expected_finished_at"
-    t.boolean "next_day"
-    t.string "work_details"
-    t.boolean "overtime_notified", default: false
-    t.integer "superior_id"
-    t.boolean "overtime_changed"
-    t.datetime "end_time"
-    t.text "task_description"
-    t.string "instructor_confirmation"
-    t.string "status"
-    t.string "overtime_status"
-    t.string "indicater_reply"
-    t.string "indicater_check"
-    t.string "indicater_reply_edit"
-    t.string "indicater_check_edit"
-    t.string "indicater_reply_month"
-    t.string "indicater_check_month"
-    t.datetime "overtime_finished_at"
     t.string "overtime_work"
     t.datetime "tomorrow_edit"
     t.datetime "started_edit_at"
     t.datetime "finished_edit_at"
-    t.boolean "tomorrow"
+    t.string "indicater_check"
+    t.string "indicater_reply"
+    t.string "indicater_reply_edit"
+    t.string "indicater_check_edit"
+    t.string "indicater_check_anser"
+    t.string "indicater_check_edit_anser"
+    t.string "indicater_reply_month"
+    t.string "indicater_check_month"
+    t.string "indicater_check_month_anser"
+    t.datetime "overtime_finished_at"
+    t.boolean "tomorrow", default: false
+    t.boolean "change", default: false
+    t.boolean "change_edit", default: false
+    t.datetime "started_before_at"
+    t.datetime "finished_before_at"
+    t.date "month_approval"
+    t.boolean "change_month", default: false
     t.index ["user_id"], name: "index_attendances_on_user_id"
-  end
-
-  create_table "base_stations", force: :cascade do |t|
-    t.string "base_number"
-    t.string "base_name"
-    t.string "attendance_type"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
   end
 
   create_table "bases", force: :cascade do |t|
@@ -100,21 +89,15 @@ ActiveRecord::Schema.define(version: 20231004122958) do
     t.string "remember_digest"
     t.boolean "admin", default: false
     t.string "department"
-    t.datetime "basic_time", default: "2023-05-21 23:00:00"
-    t.datetime "work_time", default: "2023-05-21 22:30:00"
-    t.boolean "is_working"
-    t.time "basic_work_time"
-    t.string "employee_number"
-    t.string "card_id"
-    t.datetime "base_work_time"
-    t.datetime "start_time"
-    t.datetime "end_time"
-    t.integer "role", default: 0
+    t.datetime "basic_time", default: "2023-10-09 23:00:00"
+    t.datetime "work_time", default: "2023-10-09 22:30:00"
     t.boolean "superior", default: false
     t.string "affiliation"
+    t.string "employee_number"
     t.string "uid"
-    t.datetime "designated_work_start_time"
-    t.datetime "designated_work_end_time"
+    t.datetime "designated_work_start_time", default: "2023-10-10 00:00:00"
+    t.datetime "designated_work_end_time", default: "2023-10-10 09:00:00"
+    t.datetime "basic_work_time", default: "2023-10-09 23:00:00"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

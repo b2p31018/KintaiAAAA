@@ -13,7 +13,7 @@
           <%= f.fields_for "attendances[]", day do |d| %>       
             <% if day.user_id == user.id && day.indicater_reply_edit == "申請中" && current_user.name == day.indicater_check_edit %>
             <table class="table table-bordered table-condensed one_month_notice-table">
-                <thead class="modal_notice">
+              <thead class="modal_notice">
                 <tr>
                   <th rowspan="3">日付</th>
                   <th rowspan="3">曜日</th>
@@ -83,4 +83,3 @@
         </div>
       </div>
     </div>
-              

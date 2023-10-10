@@ -25,6 +25,7 @@ class AttendancesController < ApplicationController
         if item[:indicater_reply].present?
           if (item[:change] == "1") && (item[:indicater_reply] == "なし" || item[:indicater_reply] == "承認" || item[:indicater_reply] == "否認")
             attendance = Attendance.find(id)
+            user = User.find(attendance.user_id)
             if item[:indicater_reply] == "なし" 
               o1+= 1
               item[:overtime_finished_at] = nil
@@ -64,23 +65,16 @@ class AttendancesController < ApplicationController
   def edit_overtime_request
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
-    @superiors = User.where(superior: true).where.not(id: current_user.id)
+    @superior = User.where(superior: true).where.not( id: current_user.id )
   end
-
+  
   def update_overtime_request
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
-    
-    # 上長情報の取得
-    @superiors = User.where(superior: true)
-  
-    if @attendance.update(overtime_params)
+    if @attendance.update_attributes!(overtime_params)
       flash[:success] = "残業申請を受け付けました"
       redirect_to user_url(@user)
-    else
-      # エラーメッセージなどの処理を追加する場合
-      render 'edit_overtime_request'  # 例：再度編集ページを表示する場合
-    end
+    end  
   end
 
   def update
