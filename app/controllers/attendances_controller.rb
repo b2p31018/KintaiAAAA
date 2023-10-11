@@ -10,9 +10,9 @@ class AttendancesController < ApplicationController
   
    # 残業申請モーダル 
   def edit_overtime_notice
-    @users = User.joins(:attendances).group("users.id").where(attendances: {indicater_reply: "申請中"})
+    @users = User.joins(:attendances).group("users.id").where(attendances: {indicater_reply: Attendance.indicater_replies["申請中"]})
     @attendances = Attendance.where.not(overtime_finished_at: nil).order("worked_on ASC")
-   #@superior = User.where(superior: true).where.not( id: current_user.id )
+    #@superior = User.where(superior: true).where.not( id: current_user.id )
   end
   
   # 残業申請お知らせモーダル更新
@@ -71,7 +71,7 @@ class AttendancesController < ApplicationController
   def update_overtime_request
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
-    if @attendance.update_attributes!(overtime_params)
+    if @attendance.update(overtime_params)
       flash[:success] = "残業申請を受け付けました"
       redirect_to user_url(@user)
     end  
@@ -134,7 +134,7 @@ class AttendancesController < ApplicationController
               redirect_to attendances_edit_one_month_user_url(date: params[:date])
               return
             end
-        @attendance.update!(item)
+          @attendance.update!(item)
           end
       end
     
@@ -152,7 +152,7 @@ class AttendancesController < ApplicationController
   
   # 勤怠変更申請お知らせモーダル
   def edit_one_month_notice
-    @users = User.joins(:attendances).group("users.id").where(attendances: {indicater_reply_edit: "申請中"})
+    @users = User.joins(:attendances).group("users.id").where(attendances: {indicater_reply: Attendance.indicater_replies["申請中"]})
     @attendances = Attendance.where.not(started_edit_at: nil, finished_edit_at: nil, note: nil, indicater_reply_edit: nil ).order("worked_on ASC")
   end
   

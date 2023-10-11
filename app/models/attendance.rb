@@ -1,9 +1,9 @@
 class Attendance < ApplicationRecord
   belongs_to :user
   
-  enum indicater_reply: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
-  enum indicater_reply_edit: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
-  enum indicater_reply_month: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
+  enum indicater_reply: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 3 }, _prefix: true
+  enum indicater_reply_edit: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 3 }, _prefix: true
+  enum indicater_reply_month: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 3 }, _prefix: true
 
   validates :worked_on, presence: true
   validates :note, length: { maximum: 50 }
@@ -14,6 +14,14 @@ class Attendance < ApplicationRecord
   
   # 出勤・退勤時間どちらも存在する時、出勤時間より早い退勤時間は無効
   validate :started_at_than_finished_at_fast_if_invalid
+
+  after_save :log_indicater_reply_value
+  
+  private
+  
+  def log_indicater_reply_value
+    logger.debug "保存後のindicater_replyの値: #{self.indicater_reply}"
+  end
 
   def finished_at_is_invalid_without_a_started_at
     errors.add(:started_at, "が必要です") if started_at.blank? && finished_at.present?
