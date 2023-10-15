@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20231009095824) do
+ActiveRecord::Schema.define(version: 20231015134018) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -53,12 +53,12 @@ ActiveRecord::Schema.define(version: 20231009095824) do
     t.datetime "started_edit_at"
     t.datetime "finished_edit_at"
     t.string "indicater_check"
-    t.string "indicater_reply"
-    t.string "indicater_reply_edit"
+    t.integer "indicater_reply", default: 0
+    t.integer "indicater_reply_edit", default: 0
     t.string "indicater_check_edit"
     t.string "indicater_check_anser"
     t.string "indicater_check_edit_anser"
-    t.string "indicater_reply_month"
+    t.integer "indicater_reply_month", default: 0
     t.string "indicater_check_month"
     t.string "indicater_check_month_anser"
     t.datetime "overtime_finished_at"

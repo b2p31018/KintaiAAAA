@@ -8,8 +8,6 @@ class UsersController < ApplicationController
   before_action :admin_not_user, only: [:show]
 
   def index
-    
-
     # @users = User.paginate(page: params[:page])
     @users = User.where.not(id:1).where('name LIKE(?)', "%#{params[:name]}%").paginate(page: params[:page], per_page: 20)
   end
