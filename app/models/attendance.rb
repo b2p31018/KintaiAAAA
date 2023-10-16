@@ -2,8 +2,8 @@ class Attendance < ApplicationRecord
   belongs_to :user
   
   enum indicater_reply: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
-  enum indicater_reply_edit: { "なし" => 0, "承認されました" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
-  enum indicater_reply_month: { "なし" => 0, "承認されました" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
+  enum indicater_reply_edit: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
+  enum indicater_reply_month: { "なし" => 0, "承認" => 1, "否認" => 2, "申請中" => 4 }, _prefix: true
 
   validates :worked_on, presence: true
   validates :note, length: { maximum: 50 }
