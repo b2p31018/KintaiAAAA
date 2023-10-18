@@ -98,10 +98,13 @@
         when '日'
           'text-danger'
         end
-       %>
-       <tr>
+      %>
+        <tr>
           <td><%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user,day), remote: true , class: "btn btn-primary" %></td>
+          <!--<td><!%= link_to "残業申請","#", remote: true , class: "btn btn-primary" %></td>-->
+
           <td><%= l(day.worked_on, format: :short) %></td>
+          <!--<td><!%= $days_of_the_week[day.worked_on.wday] %></td>-->
           <td class="<%= css_class %>"><%= %w{日 月 火 水 木 金 土}[day.worked_on.wday] %></td>
           <td><%= l(day.started_at,format: :hour) if day.started_at.present? %></td>
           <td><%= l(day.started_at,format: :minute) if day.started_at.present? %></td>
@@ -133,19 +136,22 @@
           <% end %>
          <td><%= day.overtime_work %></td>
          <td>
-           <p>
-            <% if day.indicater_check.present? %>
-              <%= "#{day.indicater_check}に残業申請中。結果: #{day.indicater_reply}" %>
+         <p>
+            <% if day.indicater_reply == "申請中" %>
+              <%= "残業申請が#{day.indicater_reply}" %>
+            <% elsif day.indicater_reply == "承認" || day.indicater_reply == "否認" %>
+              <%= "残業申請が#{day.indicater_reply}されました" %>
             <% end %>
-          </p>
-          <p>
-            <% if day.indicater_check_edit.present? %>
-              <%= "#{day.indicater_check_edit}に勤怠変更申請中。結果: #{day.indicater_reply_edit}" %>
+         </p>
+         <p>
+            <% if day.indicater_reply_edit == "申請中" %>
+              <%= "勤怠変更申請が#{day.indicater_reply_edit}" %>
+            <% elsif day.indicater_reply_edit == "承認" || day.indicater_reply_edit == "否認" %>
+              <%= "勤怠変更申請が#{day.indicater_reply_edit}されました" %>
             <% end %>
-          </p>
-          </td>
-       </tr>
-       <% end %>
+         </p>
+        </tr>
+      <% end %>
     </tbody>
 
     <tfoot>
@@ -156,6 +162,8 @@
         <td colspan="6">総合勤務時間<br><%= format_basic_info(@user.work_time).to_f * @worked_sum %></td>
         
         <td>累計在社時間<br><%= format("%.2f", @total_working_times.to_f) %></td>
+        
+        <td colspan="5">
           
           <td>
           <%= form_with(model: @user, url: attendances_update_month_approval_user_path(@user), method: :patch , local: true) do |f| %> 
