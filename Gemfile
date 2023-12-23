@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 ruby '2.7.6'
-gem 'rails',        '~> 5.1.6'
+gem 'rails',        '~> 5.2.0'
 gem 'rails-i18n'
 gem 'bcrypt'
 gem 'faker-japanese'

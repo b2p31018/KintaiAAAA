@@ -292,7 +292,7 @@ class AttendancesController < ApplicationController
     # 勤怠編集
     def attendances_params
       # userに紐ずくattendanceテーブルの（出社日,出勤,退勤,翌日,備考,指示者確認（どの上長か,指示者確認（申請かどうか））
-      params.require(:user).permit(attendances: [:worked_on, :started_at, :finished_at, :started_edit_at, :finished_edit_at, :tomorrow_edit, :note, :indicater_check_edit, :indicater_reply_edit])[:attendances]
+      params.require(:user).permit(attendances: [:worked_on, :started_at, :finished_at, :started_edit_at, :finished_edit_at, :change_edit, :note, :indicater_check_edit, :indicater_reply_edit])[:attendances]
     end
     
     # 勤怠編集お知らせモーダル

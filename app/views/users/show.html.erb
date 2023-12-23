@@ -122,7 +122,7 @@
             <% if day.started_at.present? && day.finished_at.present? %>
               <% start_time = day.started_at.floor(15.minutes) %>
               <% end_time = day.finished_at.floor(15.minutes) %>
-              <%= str_times = working_times(start_time, end_time, day.tomorrow_edit) %>
+              <%= str_times = working_times(start_time, end_time, day.change_edit) %>
               <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
             <% end %>
           </td>

@@ -39,10 +39,10 @@
                 <td><%= attendance.time_field :started_edit_at, class: "form-control" %></td>
                 <td><%= attendance.time_field :finished_edit_at, class: "form-control" %></td>
               <% end %>
-              <td><%= attendance.check_box :tomorrow_edit, id: "tomorrow" %></td>
+              <td><%= attendance.check_box :change_edit, id: "tomorrow" %></td>
               <td>
                 <% if day.started_edit_at.present? && day.finished_edit_at.present? %>
-                  <%= working_times(day.started_edit_at, day.finished_edit_at, day.tomorrow_edit) %>
+                  <%= working_times(day.started_edit_at, day.finished_edit_at, day.change_edit) %>
                 <% end %> 
               </td>
               <td><%= attendance.text_field :note, class: "form-control" %></td>
