@@ -1,5 +1,7 @@
 class ChangeDataTypeForIndicaterReplyMonth < ActiveRecord::Migration[5.1]
   def change
-    change_column :attendances, :indicater_reply_month, :integer, default: 0
+    reversible do |dir|
+      change_column :attendances, :indicater_reply_month, 'integer USING CAST(indicater_reply_month AS integer)', default: 0
+    end
   end
 end
